@@ -1,0 +1,36 @@
+[tool.poetry]
+name = "un-semun-api"
+version = "0.1.0"
+description = "API for SemUN project"
+authors = ["Clément Sicard <csicard@ethz.ch>"]
+readme = "README.md"
+packages = [{ include = "semun" }]
+
+[tool.poetry.dependencies]
+python = "~3.10"
+uvicorn = "^0.22.0"
+fastapi = "^0.98.0"
+pydantic = "^1.10.9"
+undl = { git = "https://github.com/ClementSicard/un-digital-library-api.git", tag = "v1.0.1" }
+neo4j = "^5.9.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.7.0"
+isort = "^5.12.0"
+interrogate = "^1.5.0"
+ruff = "^0.0.278"
+pre-commit = "^3.3.3"
+mypy = "^1.4.1"
+types-requests = "^2.31.0.1"
+
+
+[tool.interrogate]
+ignore-init-method = true
+ignore-init-module = true
+ignore-module = true
+fail-under = 100
+verbose = 2
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
