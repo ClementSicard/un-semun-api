@@ -1,5 +1,5 @@
 import os
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from fastapi import FastAPI
 from undl.client import UNDLClient
@@ -28,8 +28,8 @@ def read_root():
 
 
 @app.get("/search")
-def search(q: str) -> Dict[str, Any]:
-    return undl.query(prompt=q)
+def search(q: str, searchId: Optional[str] = None) -> Dict[str, Any]:
+    return undl.query(prompt=q, searchId=searchId)
 
 
 @app.post("/graph")
