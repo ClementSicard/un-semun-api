@@ -26,6 +26,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 
 # Copy application files
 COPY semun ./semun
+COPY main.py .
 
 # Start FastAPI server
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
