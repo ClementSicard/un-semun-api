@@ -2,6 +2,7 @@ import os
 from typing import Any, Dict, Optional
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from undl.client import UNDLClient
 
 undl = UNDLClient(verbose=True)
@@ -19,6 +20,20 @@ app = FastAPI(
     2. Querying the SemUN graph database to get the results
     """,
     version="1.0.0",
+)
+
+
+origins = [
+    "http://localhost",
+    "http://localhost:3000",  # Adjust this to your frontend's address and port
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
