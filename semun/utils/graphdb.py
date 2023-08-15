@@ -4,7 +4,7 @@ class GraphDBConsts:
     """
 
     # GraphDB URI, from Docker compose environment
-    URI = "bolt://neo4j:7687"
+    URI = "bolt://neo4j.un-semun.orb.local:7687"
     USER = None
     PASSWORD = None
     AUTH = (USER, PASSWORD)

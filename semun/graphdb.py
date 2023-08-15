@@ -1,9 +1,8 @@
 from typing import Any, Dict, List, Optional
 
 from loguru import logger
-from neo4j import EagerResult, GraphDatabase
+from neo4j import EagerResult, GraphDatabase, Record
 
-from semun.types.record import Record
 from semun.utils.graphdb import GraphDBConsts
 
 
@@ -90,9 +89,9 @@ class GraphDB:
 
     def getAllDocumentsByIDs(
         self,
-        records: List[Record],
+        ids: List[str],
         verbose: bool = False,
-    ) -> None:
+    ) -> List[Record]:
         """
         Return the documents and their relations based on their IDs.
 
@@ -103,28 +102,24 @@ class GraphDB:
         `verbose` : `bool`, optional
             Controls the output verbose, by default `False`
         """
-        query = """
+        ids = [f'"{i}"' for i in ids]
+
+        query = f"""
+        WITH [{", ".join(ids)}] AS ids
         MATCH (n: Document)
+        WHERE n.id IN ids
+        OPTIONAL MATCH (n)-[r]-(m)
+        RETURN n, r, m
         """
 
-        for i, record in enumerate(records):
-            query += f"""
-            WHERE (d{record.id}: Document {{ id: {record.id} }})
-            """
-            if i != len(records) - 1:
-                query += " OR\n"
-
         logger.debug(f"Query: {query}")
-        summary: EagerResult = self.query(
+        records: List[Record] = self.query(
             query=query,
             verbose=verbose,
-            returnSummary=True,
         )
-        if verbose:
-            logger.success(
-                f"Created {summary.counters.nodes_created} document(s) in"
-                + f" {summary.result_available_after} ms."
-            )
+        logger.success(f"Found {len(records)} documents")
+
+        return records
 
     def checkConnection(self) -> None:
         """
@@ -137,7 +132,36 @@ class GraphDB:
         """
         try:
             self.driver.verify_connectivity()
+            logger.success("Successfully connected to the GraphDB")
         except Exception as e:
             raise ConnectionError(
                 f"Could not connect to the GraphDB at {self.URI} with auth {self.AUTH}"
             ) from e
+
+    @staticmethod
+    def convertToGraphology(records: List[Record]) -> Dict[str, Any]:
+        nodesSet = {}
+        edges = []
+
+        for item in records:
+            n = item["n"]
+            m = item.get("m")
+            r = item.get("r")
+
+            nodesSet[n.get("id")] = {"key": n.get("id"), "attributes": dict(n)}
+
+            if m:
+                nodesSet[m.get("id")] = {"key": m.get("id"), "attributes": dict(m)}
+                edgeData = {
+                    "source": n.get("id"),
+                    "target": m.get("id"),
+                }
+                if r:
+                    edgeData["attributes"] = (dict(r),)
+
+                edges.append(edgeData)
+
+        nodes = list(nodesSet.values())
+        logger.info([nodes[i]["attributes"]["id"] for i in range(len(nodes))])
+
+        return {"nodes": nodes, "edges": edges}
