@@ -140,6 +140,44 @@ class GraphDB:
 
     @staticmethod
     def convertToGraphology(records: List[Record]) -> Dict[str, Any]:
+        """
+        Graphology library in Typescript expects a certain format to load the graph from.
+        This function converts the records returned by the GraphDB to the format expected by Graphology.
+
+        Here is the expected format by Graphology:
+
+        ```json
+        {
+            "nodes": [
+                {
+                    "key": "...",
+                    "attributes": {
+                        "id": "...",
+                        "title": "...",
+                        ...
+                    }
+                }
+            ],
+            "edges": [
+                {
+                    "source": "...",
+                    "target": "...",
+                },
+                ...
+            ]
+        }
+        ```
+
+        Parameters
+        ----------
+        `records` : `List[Record]`
+            _description_
+
+        Returns
+        -------
+        `Dict[str, Any]`
+            _description_
+        """
         nodesSet = {}
         edges = []
 
@@ -157,7 +195,7 @@ class GraphDB:
                     "target": m.get("id"),
                 }
                 if r:
-                    edgeData["attributes"] = (dict(r),)
+                    edgeData["attributes"] = dict(r)
 
                 edges.append(edgeData)
 
