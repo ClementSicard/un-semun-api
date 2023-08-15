@@ -1,5 +1,7 @@
 import os
 
+from loguru import logger
+
 
 class GraphDBConsts:
     """
@@ -10,6 +12,8 @@ class GraphDBConsts:
 
     # GraphDB URI, from Docker compose environment
     URI = f"bolt://{url}:7687"
+
+    logger.warning(f"GraphDB URI: {URI}")
     USER = None
     PASSWORD = None
     AUTH = (USER, PASSWORD)
