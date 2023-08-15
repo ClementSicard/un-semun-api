@@ -3,12 +3,16 @@ from typing import Any, Dict, Optional
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from loguru import logger
 from undl.client import UNDLClient
 
 from semun.graphdb import GraphDB
 
 undl = UNDLClient(verbose=True)
 graphDbClient = GraphDB()
+
+queryCache: Dict[str, Any] = {}
+graphCache: Dict[str, Any] = {}
 
 
 app = FastAPI(
@@ -49,12 +53,32 @@ def read_root():
 
 @app.get("/search")
 def search(q: str, searchId: Optional[str] = None) -> Dict[str, Any]:
-    return undl.query(prompt=q, searchId=searchId)
+    if q in queryCache:
+        logger.success(f"Using cached query results for '{q}'")
+        return queryCache[q]
+
+    result = undl.query(prompt=q, searchId=searchId)
+    queryCache[q] = result
+
+    return result
 
 
 @app.get("/getIds")
 def getIds(q: str) -> Dict[str, Any]:
-    return undl.getAllRecordIds(prompt=q)
+    if q in queryCache:
+        logger.success(f"Using cached query results for '{q}'")
+        response = queryCache[q]
+        ids = [rec["id"] for rec in response["records"]]
+
+        return {
+            "total": response["total"],
+            "hits": ids,
+        }
+    logger.info(f"No cache for query '{q}'. Getting IDs from UNDL")
+    response = undl.getAllRecordIds(prompt=q)
+    queryCache[q] = response
+
+    return response
 
 
 @app.get("/graph")
@@ -74,7 +98,14 @@ def getResultsGraph(q: str) -> Dict[str, Any]:
     `List[Dict[str, Any]]`
         The graph DB objects corresponding to the query results
     """
-    ids = undl.getAllRecordIds(prompt=q)
+    if q in graphCache:
+        logger.success(f"Using cached graph results for '{q}'")
+        return graphCache[q]
+
+    ids = getIds(q=q)
     docs = graphDbClient.getAllDocumentsByIDs(ids["hits"])
 
-    return GraphDB.convertToGraphology(docs)
+    graphologyConverted = GraphDB.convertToGraphology(docs)
+    graphCache[q] = graphologyConverted
+
+    return graphologyConverted
