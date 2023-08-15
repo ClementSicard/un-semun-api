@@ -189,7 +189,7 @@ class GraphDB:
             r = item.get("r")
 
             attributes = dict(n)
-            attributes["type"] = set(n.labels).pop()
+            attributes["nodeType"] = set(n.labels).pop()
 
             nodesSet[n.get("id")] = {"key": n.get("id"), "attributes": attributes}
 
