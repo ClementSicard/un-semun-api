@@ -181,12 +181,16 @@ class GraphDB:
         nodesSet = {}
         edges = []
 
+        logger.debug(records[0])
+
         for item in records:
             n = item["n"]
             m = item.get("m")
             r = item.get("r")
 
-            nodesSet[n.get("id")] = {"key": n.get("id"), "attributes": dict(n)}
+            attributes = dict(n).update({"type": set(n.labels).pop()})
+
+            nodesSet[n.get("id")] = {"key": n.get("id"), "attributes": attributes}
 
             if m:
                 nodesSet[m.get("id")] = {"key": m.get("id"), "attributes": dict(m)}
