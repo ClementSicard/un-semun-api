@@ -188,7 +188,8 @@ class GraphDB:
             m = item.get("m")
             r = item.get("r")
 
-            attributes = dict(n).update({"type": set(n.labels).pop()})
+            attributes = dict(n)
+            attributes["type"] = set(n.labels).pop()
 
             nodesSet[n.get("id")] = {"key": n.get("id"), "attributes": attributes}
 
@@ -204,5 +205,6 @@ class GraphDB:
                 edges.append(edgeData)
 
         nodes = list(nodesSet.values())
+        logger.info([nodes[i]["attributes"]["id"] for i in range(len(nodes))])
 
         return {"nodes": nodes, "edges": edges}
