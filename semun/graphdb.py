@@ -188,13 +188,15 @@ class GraphDB:
             m = item.get("m")
             r = item.get("r")
 
-            attributes = dict(n)
-            attributes["nodeType"] = set(n.labels).pop()
+            nAttributes = dict(n)
+            nAttributes["nodeType"] = set(n.labels).pop()
 
-            nodesSet[n.get("id")] = {"key": n.get("id"), "attributes": attributes}
+            nodesSet[n.get("id")] = {"key": n.get("id"), "attributes": nAttributes}
 
             if m:
-                nodesSet[m.get("id")] = {"key": m.get("id"), "attributes": dict(m)}
+                mAttributes = dict(m)
+                mAttributes["nodeType"] = set(m.labels).pop()
+                nodesSet[m.get("id")] = {"key": m.get("id"), "attributes": mAttributes}
                 edgeData = {
                     "source": n.get("id"),
                     "target": m.get("id"),
