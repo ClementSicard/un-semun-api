@@ -204,6 +204,5 @@ class GraphDB:
                 edges.append(edgeData)
 
         nodes = list(nodesSet.values())
-        logger.info([nodes[i]["attributes"]["id"] for i in range(len(nodes))])
 
         return {"nodes": nodes, "edges": edges}
