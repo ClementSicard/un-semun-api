@@ -171,12 +171,12 @@ class GraphDB:
         Parameters
         ----------
         `records` : `List[Record]`
-            _description_
+            The records returned by the GraphDB
 
         Returns
         -------
         `Dict[str, Any]`
-            _description_
+            The graphology formatted graph
         """
         nodesSet = {}
         existingEdges = set()
