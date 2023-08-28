@@ -187,8 +187,6 @@ class GraphDB:
             m = item.get("m")
             r = item.get("r")
 
-            logger.debug(f"Type of r: {type(r)}")
-
             nAttributes = dict(n)
             nAttributes["nodeType"] = set(n.labels).pop()
 
