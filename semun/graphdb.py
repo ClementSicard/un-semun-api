@@ -179,21 +179,29 @@ class GraphDB:
             _description_
         """
         nodesSet = {}
+        existingEdges = set()
         edges = []
-
-        logger.debug(records[0])
 
         for item in records:
             n = item["n"]
             m = item.get("m")
             r = item.get("r")
 
+            logger.debug(f"Type of r: {type(r)}")
+
             nAttributes = dict(n)
             nAttributes["nodeType"] = set(n.labels).pop()
 
             nodesSet[n.get("id")] = {"key": n.get("id"), "attributes": nAttributes}
 
-            if m:
+            if m is not None:
+                edgeId = (n.get("id"), m.get("id"))
+                if edgeId in existingEdges:
+                    logger.warning(
+                        f"Edge already exists between {n.get('id')} and {m.get('id')}"
+                    )
+                    continue
+
                 mAttributes = dict(m)
                 mAttributes["nodeType"] = set(m.labels).pop()
                 nodesSet[m.get("id")] = {"key": m.get("id"), "attributes": mAttributes}
@@ -201,9 +209,10 @@ class GraphDB:
                     "source": n.get("id"),
                     "target": m.get("id"),
                 }
-                if r:
-                    edgeData["attributes"] = dict(r)
+                if r is not None:
+                    edgeData["type"] = str(type(r)).split(".")[-1].split("'")[0]
 
+                existingEdges.add(edgeId)
                 edges.append(edgeData)
 
         nodes = list(nodesSet.values())

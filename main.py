@@ -1,5 +1,5 @@
 import os
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -103,9 +103,67 @@ def getResultsGraph(q: str) -> Dict[str, Any]:
         return graphCache[q]
 
     ids = getIds(q=q)
-    docs = graphDbClient.getAllDocumentsByIDs(ids["hits"])
+    docs = graphDbClient.getAllDocumentsByIDs(ids=ids["hits"])
 
     graphologyConverted = GraphDB.convertToGraphology(docs)
     graphCache[q] = graphologyConverted
 
     return graphologyConverted
+
+
+def getResultsFromIDs(ids: List[str]) -> Dict[str, Any]:
+    """
+    This function first gets the IDs of the records corresponding to the query
+    results, then queries the Neo4j instance to get the corresponding graph DB
+    objects.
+
+    Parameters
+    ----------
+    `ids` : `List[str]`
+        The prompt string
+
+    Returns
+    -------
+    `List[Dict[str, Any]]`
+        The graph DB objects corresponding to the query results
+    """
+    docs = graphDbClient.getAllDocumentsByIDs(ids=ids)
+
+    graphologyConverted = GraphDB.convertToGraphology(docs)
+
+    return graphologyConverted
+
+
+@app.get("/query")
+def query(q: str) -> Dict[str, Any]:
+    """
+    Queries the UNDL and the graph DB, then returns the combined
+    results as a single JSON object.
+
+    Parameters
+    ----------
+    `q` : `str`
+        The prompt string
+
+    Returns
+    -------
+    `Dict[str, Any]`
+        The combined results of the query
+    """
+    searchResults = search(q=q)
+
+    ids = [rec["id"] for rec in searchResults["records"]]
+
+    logger.debug(f"Length of IDs: {len(ids)}")
+
+    if q in graphCache:
+        logger.success(f"Using cached graph results for '{q}'")
+        graph = graphCache[q]
+
+    else:
+        graph = getResultsFromIDs(ids=ids)
+        graphCache[q] = graph
+
+    searchResults["graph"] = graph
+
+    return searchResults
