@@ -35,7 +35,7 @@ app = FastAPI(
 origins = [
     "http://localhost",
     "http://localhost:3000",  # Adjust this to your frontend's address and port
-    "http://un-semun-frontend.un-semun.orb.local/",
+    "http://un-semun-frontend.un-semun.orb.local",
 ]
 
 app.add_middleware(
